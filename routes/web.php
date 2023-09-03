@@ -31,3 +31,14 @@ Route::controller(App\Http\Controllers\AdministrationController::class)
 			return view("admin.dashboard");
 		});
 	});
+
+Route::controller(App\Http\Controllers\PaymentsController::class)
+	->prefix('payments')
+	->group(function() {
+		Route::post('/confirm', 'process')
+			->name('process_payment');
+	});
+
+Route::get('/order/checkout', function () {
+    return view('orders.checkout');
+});
