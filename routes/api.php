@@ -31,10 +31,13 @@ Route::prefix('v1.0')
 		Route::controller(ProductController::class)
 			->prefix('products')
 			->group(function() {
-				Route::get('/all', 'getAllProducts');
-				Route::post('/new', 'addNewProduct')
-					->middleware(['auth:sanctum', 'ability:admin']);
-				Route::put('/{id}/update', 'updateProduct')
-					->middleware(['auth:sanctum', 'ability:admin']);
+				Route::get('/', 'getAllProducts');
+
+        Route::middleware(['auth:sanctum', 'ability:admin'])
+          ->group(function() {
+            Route::post('/new', 'addNewProduct');
+            Route::put('/{id}/update', 'updateProduct');
+            Route::delete('/{id}/delete', 'destroy');
+          });
 			});
 	});

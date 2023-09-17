@@ -16,9 +16,29 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function getAllProducts()
+    public function getAllProducts(Request $req)
     {
-        //
+        $status = 200;
+        $responseBody = [
+            'message' => 'Operation successful!'
+        ];
+
+        $page = $req->input('page') ?? 0;
+
+        try {
+          // Retrieval of data
+          $responseBody['payload'] = Product::paginate(100, ['*'], 'page', $page);
+        } catch (Throwable $e) {
+            report($e);
+
+            $status = 500;
+            $responseBody = [
+                'message' => 'Internal error occurred!!'
+            ];
+        }
+        
+
+        return response()->json($responseBody, $status);
     }
 
     /**
@@ -112,8 +132,35 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Product $product)
+    public function destroy(Request $req, $id)
     {
-        //
+        $status = 200;
+        $responseBody = [
+            'message' => 'Operation successful!'
+        ];
+
+        try {
+            $product = Product::find($id);
+
+            if ($product != null) {
+              $product->status = 'DELETED';
+              $product->save();
+            } else {
+              $status = 404;
+              $responseBody = [
+                  'message' => "No product with id $id was found!" 
+              ];
+            }
+
+        } catch (Throwable $e) {
+            report($e);
+
+            $status = 500;
+            $responseBody = [
+                'message' => 'Internal error occurred!!'
+            ];
+        }
+
+        return response()->json($responseBody, $status);
     }
 }
