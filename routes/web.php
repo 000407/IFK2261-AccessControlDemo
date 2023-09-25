@@ -25,11 +25,16 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])
 
 Route::controller(App\Http\Controllers\AdministrationController::class)
 	->prefix('admin')
-	->middleware(['auth.authorize:admin,root'])
+	// ->middleware(['auth.authorize:admin,root'])
 	->group(function() {
 		Route::get('/home', function() {
 			return view("admin.dashboard");
 		});
+
+    Route::get('/users/all', 'getAllUsers');
+
+    Route::patch('/user/{userId}/role/{roleId}', 'addRoleToUser');
+    Route::patch('/product/{productId}/location/{locationId}/quantity/{quantity}', 'addOrUpdateQuantities');
 	});
 
 Route::controller(App\Http\Controllers\PaymentsController::class)
