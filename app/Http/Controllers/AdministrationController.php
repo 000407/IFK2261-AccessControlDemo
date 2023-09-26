@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Location;
-use App\Models\Product;
+use App\Exceptions\NotFoundException;
 use App\Models\ProductLocation;
+use App\Services\ProductService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Throwable;
 
 class AdministrationController extends Controller {
+  protected $productService;
   protected $userService;
 
-  public function __construct(UserService $userService) {
+  public function __construct(
+    ProductService $productService,
+    UserService $userService
+  ) {
+    $this->productService = $productService;
     $this->userService = $userService;
   }
 
@@ -40,24 +45,13 @@ class AdministrationController extends Controller {
     $message = 'Operation successfully completed!';
 
     try {
-      $product = Product::find($productId);
-
-      if ($product != null) {
-        if (Location::exists($locationId)) {
-          $product->locations()->syncWithPivotValues($locationId, [
-            'quantity' => $quantity,
-          ], false);
-        } else {
-          $status = 404;
-          $message = "No location found for ID $locationId";
-        }
-      } else {
-        $status = 404;
-        $message = "No product found for ID $productId";
-      }
-    } catch (Throwable $e) {
+      $this->productService->upsertLocationStock($productId, $locationId, $quantity);
+    } catch (NotFoundException $e) {
       report($e);
       $message = $e->getMessage();
+      $status = $e->getCode();
+    } catch (Throwable $e) {
+      report($e);
       $status = 500;
       $message = 'Internal error occurred!';
     }
